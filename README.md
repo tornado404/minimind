@@ -1,3 +1,35 @@
+# zipformer低功耗流式麦克风音频识别
+```aiignore
+# 流式麦克风音频识别
+  
+python ./python-api-examples/speech-recognition-from-microphone-with-endpoint-detection.py --tokens=./zipformer/zipformer/tokens.txt --encoder=./zipformer/zipformer/encoder-epoch-99-avg-1.onnx --decoder=./zipformer/zipformer/decoder-epoch-99-avg-1.onnx --joiner=./zipformer/zipformer/joiner-epoch-99-avg-1.onnx
+```
+
+# sence-voice麦克风语音识别
+```aiignore
+python ./python-api-examples/vad-with-non-streaming-asr.py --silero-vad-model=./sense-voice/silero_vad.onnx --sense-voice=./sense-voice/model.int8.onnx --tokens=./sense-voice/tokens.txt --num-threads=2
+```
+
+# 关键词唤醒
+
+## 自定义唤醒词setup
+```aiignore
+git clone https://www.modelscope.cn/pkufool/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01.git
+pip install pypinyin
+cd D:\code\minimind\zipformer-wenetspeech
+sherpa-onnx-cli text2token --tokens tokens.txt --tokens-type bpe --bpe-model bpe.model keywords_raw.txt keywords.txt
+cd D:\code\minimind\wenetspeech
+sherpa-onnx-cli text2token --tokens tokens.txt --tokens-type ppinyin keywords_raw.txt keywords.txt
+ 
+```
+
+## 唤醒词服务
+```aiignore
+# zipformer-wenetspeech
+python ./python-api-examples/keyword-spotter.py --encoder=zipformer-wenetspeech/encoder-epoch-12-avg-2-chunk-16-left-64.onnx --decoder=zipformer-wenetspeech/decoder-epoch-12-avg-2-chunk-16-left-64.onnx --joiner=zipformer-wenetspeech/joiner-epoch-12-avg-2-chunk-16-left-64.onnx --tokens=./zipformer-wenetspeech/tokens.txt --keywords-file=./zipformer-wenetspeech/test_wavs/test_keywords.txt ./zipformer-wenetspeech/test_wavs/3.wav zipformer-wenetspeech/test_wavs/4.wav ./zipformer-wenetspeech/test_wavs/5.wav
+python ./python-api-examples/keyword-spotter-from-microphone.py --encoder=wenetspeech/encoder-epoch-12-avg-2-chunk-16-left-64.onnx --decoder=wenetspeech/decoder-epoch-12-avg-2-chunk-16-left-64.onnx --joiner=wenetspeech/joiner-epoch-12-avg-2-chunk-16-left-64.onnx --tokens=./wenetspeech/tokens.txt --keywords-file=./wenetspeech/keywords.txt  
+```
+
 <div align="center">
 
 ![logo](./images/logo.png)
@@ -1252,9 +1284,7 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
     ```
 * API接口示例，兼容openai api格式
     ```bash
-    curl http://ip:port/v1/chat/completions \
-      -H "Content-Type: application/json" \
-      -d '{ 
+    curl http://ip:port/v1/chat/completions     -H "Content-Type: application/json"     -d '{ 
         "model": "model-identifier",
         "messages": [ 
           { "role": "user", "content": "世界上最高的山是什么？" }
